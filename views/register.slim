@@ -1,5 +1,13 @@
-h1 Registrera dig
-form action="/register" method="post"
-    input type="text" placeholder="Enter name" name="user" 
-    input type="text" placeholder="Enter Password" name="pwd"  
-    input type="submit" value="Registrera"
+body    
+    h1 Registrera dig
+    div.container
+        div.form-box
+            form.register action="/register" method="post"
+                div.form-group
+                    label Användarnamn
+                    input type="text" placeholder="Enter name" name="user" 
+                div.form-group
+                    input.password type="text" placeholder="Enter Password" name="pwd"  
+                    input.password type="text" placeholder="Enter Password" name="pwd" 
+                    
+                input type="submit" value="Registrera"

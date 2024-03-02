@@ -29,6 +29,7 @@ body {
 .form-group {
     margin-bottom: 15px;
 }
+
   
 label {
     font-weight: bold;
@@ -36,6 +37,9 @@ label {
   
 input[type="text"],
 input[type="password"] {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
     width: 80%;
     padding: 10px;
     border: 1px solid #ccc;
