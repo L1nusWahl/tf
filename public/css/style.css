@@ -34,6 +34,14 @@ body {
 label {
     font-weight: bold;
 }
+
+.teams-container {
+    display: flex;
+    height: 200px;
+    width: 500px; 
+    border-radius: 10px;
+    border: 1px solid black;
+}
   
 input[type="text"],
 input[type="password"] {
