@@ -1,0 +1,13 @@
+h2 alla dina todos #{session[:id]}
+
+
+- todos.each do |todo|
+    section.container
+        a.teams-container href="todos/#{todo['id']}/edit"
+            p = todo["team_name"]
+        div.buttons
+            a class="todo_lank" href="todos/#{todo['id']}/edit" Uppdatera
+            form action="todos/#{todo["id"]}/delete" method="POST"
+                input type="submit" value="Delete"
+
+a class="todo_lank" href="todos/new_todos" Skapa todo

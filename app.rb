@@ -24,7 +24,7 @@ post('/login') do
   db = SQLite3::Database.new("Data/Pokemon.db")
   db.results_as_hash = true 
   result = db.execute('SELECT * FROM users WHERE username = ?', username).first
-  user_id = result["id"]
+  id = result["id"]
   password_digest = result["password_digest"]
 
   if result.empty?
@@ -32,8 +32,8 @@ post('/login') do
   end 
 
   if BCrypt::Password.new(password_digest) == password
-    session[:user_id] = user_id 
-    redirect('/teams')
+    session[:id] = id 
+    redirect('/todos')
   else
     redirect('/fel')
   end
@@ -64,7 +64,6 @@ post('/register') do
       redirect('/fel')
     end 
   else 
-
     redirect('/fel')
   end
 end 
@@ -80,37 +79,47 @@ get('/data') do
   slim(:info)
 end
 
-get('/teams') do
+get('/todos') do
   id = session[:id].to_i
   db = SQLite3::Database.new('Data/Pokemon.db')
   db.results_as_hash = true 
-  result = db.execute("SELECT * FROM Teams WHERE user_id = ?", id)
-  slim(:"teams/new_team", locals:{teams:result})
+  result = db.execute("SELECT * FROM Teams WHERE user_id = ?",id)
+  p "alla todos #{result}"
+  slim(:"todos/index",locals:{todos:result})
 end 
 
-get('/teams/new_team') do
-  slim(:"teams/new_team")
+get('/todos/new_todos') do
+  slim(:"todos/new_todos")
 end
 
-post('/teams/new_team') do 
+
+post('/todos/new_todos') do 
   team_name = params[:team_name]
   user_id = session[:id]
   db = SQLite3::Database.new("Data/Pokemon.db")
-  db.execute("INSERT INTO Teams(team_name, user_id) VALUES (?, ?)", team_name, user_id)
-  redirect('/teams')
+  db.execute("INSERT INTO Teams(team_name, user_id) VALUES (?,?)",team_name, user_id)
+  redirect('/todos')
 end 
 
-get('/teams/:id/edit') do
+get('/todos/:id/edit') do
   id = params[:id]
   db = SQLite3::Database.new("Data/Pokemon.db")
   db.results_as_hash = true
   result = db.execute("SELECT * FROM Teams WHERE id = ?", id).first
-  slim(:"teams/edit_team", locals: { result: result })
+  slim(:"/todos/edit",locals:{result:result})
 end
 
-post('/teams/:id/delete') do 
+post('/todos/:id/update') do 
+  id = params[:id]
+  team_name = params[:team_name]
+  db = SQLite3::Database.new("Data/Pokemon.db")
+  db.execute("UPDATE Teams SET team_name=? WHERE id = ?",team_name,id)
+  redirect('/todos')
+end 
+
+post('/todos/:id/delete') do 
   id = params[:id]
   db = SQLite3::Database.new("Data/Pokemon.db")
   db.execute("DELETE FROM Teams WHERE id = ?", id)
-  redirect('/teams')
-end
+  redirect('/todos')
+end 
