@@ -1,0 +1,18 @@
+h1 Redigera lag
+
+h2 Lagets namn: #{@team['team_name']}
+
+h3 Pokémon i laget:
+ul
+  - @pokemon_in_team.each do |pokemon|
+    li
+      = pokemon["name"]
+      form action="/teams/#{@team['id']}/remove_pokemon/#{pokemon['id']}" method="post"
+        button type="submit" = "Ta bort"
+
+h3 Lägg till Pokémon:
+form action="/teams/#{@team['id']}/add_pokemon" method="post"
+  select name="pokemon_id"
+    - @all_pokemon.each do |pokemon|
+      option value="#{pokemon['id']}" = pokemon["name"]
+  input type="submit" value="Lägg till"

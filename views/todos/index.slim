@@ -5,9 +5,13 @@ h2 alla dina todos #{session[:id]}
     section.container
         a.teams-container href="todos/#{todo['id']}/edit"
             p = todo["team_name"]
-        div.buttons
-            a class="todo_lank" href="todos/#{todo['id']}/edit" Uppdatera
+        div.edit_and_delete
+            a class="todo_lank" href="teams/#{todo['id']}/edit"
+                button class="edit"
+                    <ion-icon class="edit_icon" name="create-outline">
             form action="todos/#{todo["id"]}/delete" method="POST"
-                input type="submit" value="Delete"
+                button class="delete"
+                    <ion-icon  name="trash-outline"></ion-icon>
+                        input type="submit" value="Delete"
 
 a class="todo_lank" href="todos/new_todos" Skapa todo

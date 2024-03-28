@@ -1,20 +1,52 @@
 body {
     display: flex;
     flex-direction: column;
+    justify-content: center;
     align-items: center;
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
-    height: 1000px;
     margin: 0;
     padding: 0;
 }
-  
+.login {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    height: 400px;
+    margin: 0;
+    padding: 0;
+
+}
+.edit { 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 30px;
+    width: 30px;
+}
+
+.edit_icon {
+    display: flex;
+    height: 30px;
+    width: 30px;
+}
+
+.delete { 
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    height: 30px;
+    width: 100px;
+}
 .container {
     display: flex;
-    flex-direction: row;
+    justify-content: space-evenly;
     align-items: center;
-    height: 200px;
-    width: 400px;
+    width: 500px;
+    height: 120px;;
 }
   
 .form-box {
@@ -43,11 +75,24 @@ label {
     border: 1px solid black;
 }
 
-.buttons {
+.loggin {
     display: flex;
     height: 40px;
+    width: 200px;
+    align-items: center;
     flex-direction: row;
-    justify-content: center;
+    justify-content: space-evenly;
+    align-items: center;
+
+}
+
+.edit_and_delete {
+    display: flex;
+    height: 100%;
+    width: 150px;
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-evenly;
     align-items: center;
 }
   
@@ -64,7 +109,6 @@ input[type="password"] {
   
 button[type="submit"] {
     width: 80%;
-    padding: 10px;
     border: none;
     border-radius: 5px;
     background-color: #007bff;
@@ -79,7 +123,6 @@ button[type="submit"]:hover {
 a {
     display: block;
     text-align: center;
-    margin-top: 10px;
     color: #007bff;
     text-decoration: none;
 }

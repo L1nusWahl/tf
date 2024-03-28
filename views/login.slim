@@ -1,15 +1,15 @@
 
-body 
-    div.container
-      div.form-box
-        h1 Logga in
-        form action="/login" method="post"
-          div.form-group
-            label Användarnamn
-            input.form-control(type="text" placeholder="Användarnamn" name="username")
-          div.form-group
-            label Lösenord
-            input.form-control(type="password" placeholder="Lösenord" name="password")
-          button.btn.btn-primary(type="submit") Logga in
-        a(href='/register') Registrera dig
+section.login
+  div.container
+    div.form-box
+      h1 Logga in
+      form action="/login" method="post"
+        div.form-group
+          label Användarnamn
+          input.form-control(type="text" placeholder="Användarnamn" name="username")
+        div.form-group
+          label Lösenord
+          input.form-control(type="password" placeholder="Lösenord" name="password")
+        button.loggin(type="submit") Logga in
+      a(href='/register') Registrera dig
 
