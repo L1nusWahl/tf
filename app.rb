@@ -1,3 +1,5 @@
+
+require_relative 'Model/Model.rb'
 require  'sinatra'
 require  'slim'
 require  'sinatra/reloader'
@@ -6,7 +8,17 @@ require 'sqlite3'
 require 'bcrypt'
 
 
+
 enable :sessions
+
+include Model
+
+helpers do
+  def current_user_admin?
+    return session[:id] && session[:role] == 1
+  end
+end
+
 
 get('/') do 
   slim(:login)
@@ -16,29 +28,35 @@ get('/login') do
   slim (:login)
 end
 
+post('/logout') do
+  session.clear
+  redirect('/') 
+end
+
 
 post('/login') do
- 
   username = params[:username]
   password = params[:password]
   db = SQLite3::Database.new("Data/Pokemon.db")
   db.results_as_hash = true 
   result = db.execute('SELECT * FROM users WHERE username = ?', username).first
-  p "Reslut är #{result}"
 
-  if result == nil
+  if result.nil?
     redirect('/fel')
   end 
+
   id = result["id"]
   password_digest = result["password_digest"]
+  role = result["role"]
 
   if BCrypt::Password.new(password_digest) == password
-    session[:id] = id 
-    redirect('/todos')
+    session[:id] = id
+    session[:role] = role 
+    redirect('/home')
   else
     redirect('/fel')
   end
-end 
+end
 
 get ('/fel') do
   slim(:fel)
@@ -69,16 +87,44 @@ post('/register') do
   end
 end 
 
-post('/logga_ut') do 
-  session[:key] = nil 
-  session[:key2] = nil
-  redirect('/')
+get('/home') do 
+  slim(:home)
 end 
 
-get('/data') do
-  @data = CSV.open("data/MOCK_DATA.csv", headers: :first_row).map(&:to_h)
-  slim(:info)
+get('/pokemon') do
+  if current_user_admin?
+    db = SQLite3::Database.new("Data/Pokemon.db")
+    db.results_as_hash = true 
+    @all_pokemon = db.execute("SELECT * FROM Pokemon")
+    slim(:pokemon)
+  else
+    redirect('/fel')
+  end
 end
+
+post('/remove_pokemon/:id') do
+  if current_user_admin?
+    pokemon_id = params[:id]
+    db = SQLite3::Database.new("Data/Pokemon.db")
+    db.execute("DELETE FROM Pokemon WHERE id = ?", pokemon_id)
+    redirect('/pokemon')
+  else
+    redirect('/fel')
+  end
+end
+
+post('/add/new_pokemon') do
+  if current_user_admin?
+    pokemon_name = params[:pokemon_name]
+    db = SQLite3::Database.new("Data/Pokemon.db")
+    db.execute("INSERT INTO Pokemon (name) VALUES (?)", pokemon_name)
+    redirect('/pokemon')
+  else
+    redirect('/fel')
+  end
+end
+
+
 
 get('/todos') do
   id = session[:id].to_i
@@ -127,6 +173,8 @@ get('/teams/:id/edit') do
   @pokemon_in_team = db.execute("SELECT * FROM TeamPokemons WHERE team_id = ?", id)
   
   @all_pokemon = db.execute("SELECT * FROM Pokemon")
+
+  @all_moves = db.execute("SELECT * FROM Moves") 
   
   slim(:"todos/edit", locals: {team:@team, pokemon_in_team:@pokemon_in_team, all_pokemon:@all_pokemon})
 end
@@ -149,12 +197,38 @@ post('/teams/:id/remove_pokemon/:pokemon_id') do
 
   db = SQLite3::Database.new("Data/Pokemon.db")
 
-  db.execute("DELETE FROM TeamPokemons WHERE team_id = ? AND pokemon_id = ?", team_id, pokemon_id)
+  db.execute("DELETE FROM TeamPokemons WHERE team_id = ? AND id = ?", [team_id, pokemon_id])
 
   redirect("/teams/#{team_id}/edit")
 end
 
-put('/teams/:id') do
+
+post('/teams/:team_id/add_move/:pokemon_id') do
+  team_id = params[:team_id]
+  pokemon_id = params[:pokemon_id]
+  move_id = params[:move_id]
+
+  db = SQLite3::Database.new("Data/Pokemon.db")
+  
+  db.execute("INSERT INTO Moves_Pokemon(team_id, pokemon_id, move_id) VALUES (?, ?, ?)", [team_id, pokemon_id, move_id])
+
+  redirect("/teams/#{team_id}/edit")
+end
+
+get('/teams/:id/choose_moves') do
+  id = params[:id]
+  db = SQLite3::Database.new("Data/Pokemon.db")
+  db.results_as_hash = true
+  
+  @team = db.execute("SELECT * FROM Teams WHERE id = ?", id).first
+  @pokemon_in_team = db.execute("SELECT * FROM TeamPokemons WHERE team_id = ?", id)
+  @all_moves = db.execute("SELECT * FROM Moves") 
+  
+  slim(:"todos/choose_moves", locals: { team: @team, pokemon_in_team: @pokemon_in_team, all_moves: @all_moves })
+end
+
+
+post('/teams/:id') do
   id = params[:id]
   team_name = params[:team_name]
 

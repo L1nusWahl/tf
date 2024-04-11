@@ -1,0 +1,11 @@
+h1 All Pokémon
+a.tillbaka_lank href="/home" Tillbaka 
+ul
+  - @all_pokemon.each do |pokemon|
+    li = pokemon['name']
+    form action="/remove_pokemon/#{pokemon['id']}" method="post"
+      input type="submit" value="Ta bort"
+li
+  form action="/add/new_pokemon" method="post"
+    input type="text" name="pokemon_name" placeholder="Namn på Pokémon"
+    input type="submit" value="Lägg till Pokémon"

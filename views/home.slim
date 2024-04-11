@@ -1,0 +1,17 @@
+
+header
+  h1 Min Webbapplikation
+  nav
+    ul
+      li
+        a href="/home" Startsida
+      - if current_user_admin?
+        li
+          a href="/pokemon" Pokémon
+      li
+        a href="/todos" Build Team
+      - if session[:id]
+        li
+          form action="/logout" method="post"
+            input type="submit" value="Logga ut"
+
