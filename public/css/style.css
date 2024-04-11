@@ -52,7 +52,6 @@ body {
     background-color: #1da8b5;
     padding: 20px;
     border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
   
 .form-group {
@@ -62,6 +61,42 @@ body {
   
 label {
     font-weight: bold;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 300px;
+}
+
+.form-box {
+    width: 250px; 
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="password"] {
+    width: 60%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+
+input[type="submit"]:hover {
+    background-color: #0056b3;
 }
 
 .pokemon-container {
@@ -115,7 +150,7 @@ li {
 }
 
 .moves input[type="submit"] {
-    width: 50px;
+    width: 60px;
     height: 20px;
 } 
 .teams-container {

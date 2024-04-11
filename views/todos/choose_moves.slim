@@ -1,8 +1,0 @@
-h3 Välj Moves för Pokémon
-
-form action="/teams/#{@team['id']}/add_pokemon" method="post"
-select name="move_id"
-    - @all_moves.each do |moves|
-        option value="#{moves['id']}" = moves["name"]
-  
-    input type="submit" value="Lägg till"

@@ -1,240 +1,198 @@
-
 require_relative 'Model/Model.rb'
-require  'sinatra'
-require  'slim'
-require  'sinatra/reloader'
-require 'csv'
+require 'sinatra'
+require 'slim'
+require 'sinatra/reloader'
 require 'sqlite3'
 require 'bcrypt'
 
-
-
 enable :sessions
-
 include Model
 
 helpers do
   def current_user_admin?
-    return session[:id] && session[:role] == 1
+    session[:id] && session[:role] == 1
   end
 end
 
-
+# Display the landing page or login page if not authenticated
+#
 get('/') do 
-  slim(:login)
+  slim(:"users/login")
 end 
 
-get('/login') do
-  slim (:login)
+# Displays the login form
+#
+get('/users/login') do
+  slim(:"users/login")
 end
 
+# Logs out the current user by clearing the session
+#
 post('/logout') do
   session.clear
   redirect('/') 
 end
 
-
-post('/login') do
-  username = params[:username]
-  password = params[:password]
-  db = SQLite3::Database.new("Data/Pokemon.db")
-  db.results_as_hash = true 
-  result = db.execute('SELECT * FROM users WHERE username = ?', username).first
-
-  if result.nil?
-    redirect('/fel')
-  end 
-
-  id = result["id"]
-  password_digest = result["password_digest"]
-  role = result["role"]
-
-  if BCrypt::Password.new(password_digest) == password
-    session[:id] = id
-    session[:role] = role 
-    redirect('/home')
-  else
-    redirect('/fel')
-  end
+# Authenticates the user based on username and password
+#
+# @param [String] username, The username of the user
+# @param [String] password, The password of the user
+#
+# @see Model#login_user
+post('/users/login') do
+  login_user(params[:username], params[:password])
 end
 
-get ('/fel') do
+# Displays an error page
+#
+get('/fel') do
   slim(:fel)
+end
+
+# Displays the user registration form
+#
+get('/users/register') do
+  slim(:"users/register")
 end 
 
-get ('/register') do
-  slim(:register)
-end 
-
+# Registers a new user
+#
+# @param [String] username, The username of the new user
+# @param [String] password, The password of the new user
+# @param [String] confirm_password, The confirmation of the password
+#
+# @see Model#register_new_user
 post('/register') do
-  username = params[:username]
-  password = params[:password]
-  password_confirmation = params[:confirm_password]
-  db = SQLite3::Database.new("Data/Pokemon.db")
+  register_new_user(params[:username], params[:password], params[:confirm_password])
+end
 
-  result = db.execute("SELECT id FROM users WHERE username=?", username)
-
-  if result.empty?
-    if password == password_confirmation
-      password_digest = BCrypt::Password.create(password)
-      db.execute("INSERT INTO users (username, password_digest) VALUES (?,?)", [username, password_digest])
-      redirect('/login')  
-    else 
-      redirect('/fel')
-    end 
-  else 
-    redirect('/fel')
-  end
-end 
-
+# Displays the home page after successful login
+#
 get('/home') do 
   slim(:home)
 end 
 
+# Displays the list of pokémon if the user is an admin
+#
+# @see Model#display_pokemon_list
 get('/pokemon') do
-  if current_user_admin?
-    db = SQLite3::Database.new("Data/Pokemon.db")
-    db.results_as_hash = true 
-    @all_pokemon = db.execute("SELECT * FROM Pokemon")
-    slim(:pokemon)
-  else
-    redirect('/fel')
-  end
+  display_pokemon_list
 end
 
+# Removes a pokémon from the database
+#
+# @param [Integer] id, The id of the pokémon to be removed
+#
+# @see Model#remove_pokemon
 post('/remove_pokemon/:id') do
-  if current_user_admin?
-    pokemon_id = params[:id]
-    db = SQLite3::Database.new("Data/Pokemon.db")
-    db.execute("DELETE FROM Pokemon WHERE id = ?", pokemon_id)
-    redirect('/pokemon')
-  else
-    redirect('/fel')
-  end
+  remove_pokemon(params[:id])
 end
 
+# Adds a new pokémon to the database
+#
+# @param [String] pokemon_name, The name of the new pokémon
+#
+# @see Model#add_new_pokemon
 post('/add/new_pokemon') do
-  if current_user_admin?
-    pokemon_name = params[:pokemon_name]
-    db = SQLite3::Database.new("Data/Pokemon.db")
-    db.execute("INSERT INTO Pokemon (name) VALUES (?)", pokemon_name)
-    redirect('/pokemon')
-  else
-    redirect('/fel')
-  end
+  add_new_pokemon(params[:pokemon_name])
 end
 
-
-
+# Displays the list of user's todos
+#
+# @see Model#display_user_todos
 get('/todos') do
-  id = session[:id].to_i
-  db = SQLite3::Database.new('Data/Pokemon.db')
-  db.results_as_hash = true 
-  result = db.execute("SELECT * FROM Teams WHERE user_id = ?",id)
-  p "alla todos #{result}"
-  slim(:"todos/index",locals:{todos:result})
+  display_user_todos
 end 
 
+# Displays the form to create a new todo
+#
 get('/todos/new_todos') do
   slim(:"todos/new_todos")
 end
 
-
+# Creates a new todo
+#
+# @param [String] team_name, The name of the team for the todo
+#
+# @see Model#create_new_todo
 post('/todos/new_todos') do 
-  team_name = params[:team_name]
-  user_id = session[:id]
-  db = SQLite3::Database.new("Data/Pokemon.db")
-  db.execute("INSERT INTO Teams(team_name, user_id) VALUES (?,?)",team_name, user_id)
-  redirect('/todos')
+  create_new_todo(params[:team_name], session[:id])
 end 
 
+# Updates an existing todo
+#
+# @param [Integer] id, The id of the todo to be updated
+# @param [String] team_name, The updated name of the team
+#
+# @see Model#update_todo
 post('/todos/:id/update') do 
-  id = params[:id]
-  team_name = params[:team_name]
-  db = SQLite3::Database.new("Data/Pokemon.db")
-  db.execute("UPDATE Teams SET team_name=? WHERE id = ?",team_name,id)
-  redirect('/todos')
+  update_todo(params[:id], params[:team_name])
 end 
 
+# Deletes an existing todo
+#
+# @param [Integer] id, The id of the todo to be deleted
+#
+# @see Model#delete_todo
 post('/todos/:id/delete') do 
-  id = params[:id]
-  db = SQLite3::Database.new("Data/Pokemon.db")
-  db.execute("DELETE FROM Teams WHERE id = ?", id)
-  redirect('/todos')
+  delete_todo(params[:id])
 end 
 
+# Displays the edit page for a team
+#
+# @param [Integer] id, The id of the team
+#
+# @see Model#display_team_edit_page
 get('/teams/:id/edit') do
-  id = params[:id]
-  db = SQLite3::Database.new("Data/Pokemon.db")
-  db.results_as_hash = true
-  
-  @team = db.execute("SELECT * FROM Teams WHERE id = ?", id).first
-  
-  @pokemon_in_team = db.execute("SELECT * FROM TeamPokemons WHERE team_id = ?", id)
-  
-  @all_pokemon = db.execute("SELECT * FROM Pokemon")
-
-  @all_moves = db.execute("SELECT * FROM Moves") 
-  
-  slim(:"todos/edit", locals: {team:@team, pokemon_in_team:@pokemon_in_team, all_pokemon:@all_pokemon})
+  display_team_edit_page(params[:id])
 end
 
+# Adds a pokémon to a team
+#
+# @param [Integer] id, The id of the team
+# @param [Integer] pokemon_id, The id of the pokémon
+#
+# @see Model#add_pokemon_to_team
 post('/teams/:id/add_pokemon') do
-  team_id = params[:id]
-  pokemon_id = params[:pokemon_id]
-
-  db = SQLite3::Database.new("Data/Pokemon.db")
-  
-  db.execute("INSERT INTO TeamPokemons(team_id, pokemon_id) VALUES (?, ?)", [team_id, pokemon_id])
-
-  redirect("/teams/#{team_id}/edit")
+  add_pokemon_to_team(params[:id], params[:pokemon_id])
 end
 
-
+# Removes a pokémon from a team
+#
+# @param [Integer] id, The id of the team
+# @param [Integer] pokemon_id, The id of the pokémon to be removed
+#
+# @see Model#remove_pokemon_from_team
 post('/teams/:id/remove_pokemon/:pokemon_id') do
-  team_id = params[:id]
-  pokemon_id = params[:pokemon_id]
-
-  db = SQLite3::Database.new("Data/Pokemon.db")
-
-  db.execute("DELETE FROM TeamPokemons WHERE team_id = ? AND id = ?", [team_id, pokemon_id])
-
-  redirect("/teams/#{team_id}/edit")
+  remove_pokemon_from_team(params[:id], params[:pokemon_id])
 end
 
-
+# Adds a move to a pokémon in a team
+#
+# @param [Integer] team_id, The id of the team
+# @param [Integer] pokemon_id, The id of the pokémon
+# @param [Integer] move_id, The id of the move
+#
+# @see Model#add_move_to_pokemon
 post('/teams/:team_id/add_move/:pokemon_id') do
-  team_id = params[:team_id]
-  pokemon_id = params[:pokemon_id]
-  move_id = params[:move_id]
-
-  db = SQLite3::Database.new("Data/Pokemon.db")
-  
-  db.execute("INSERT INTO Moves_Pokemon(team_id, pokemon_id, move_id) VALUES (?, ?, ?)", [team_id, pokemon_id, move_id])
-
-  redirect("/teams/#{team_id}/edit")
+  add_move_to_pokemon(params[:team_id], params[:pokemon_id], params[:move_id])
 end
 
+# Displays the page to choose moves for a team's pokémon
+#
+# @param [Integer] id, The id of the team
+#
+# @see Model#display_choose_moves_page
 get('/teams/:id/choose_moves') do
-  id = params[:id]
-  db = SQLite3::Database.new("Data/Pokemon.db")
-  db.results_as_hash = true
-  
-  @team = db.execute("SELECT * FROM Teams WHERE id = ?", id).first
-  @pokemon_in_team = db.execute("SELECT * FROM TeamPokemons WHERE team_id = ?", id)
-  @all_moves = db.execute("SELECT * FROM Moves") 
-  
-  slim(:"todos/choose_moves", locals: { team: @team, pokemon_in_team: @pokemon_in_team, all_moves: @all_moves })
+  display_choose_moves_page(params[:id])
 end
 
-
+# Updates the name of a team
+#
+# @param [Integer] id, The id of the team
+# @param [String] team_name, The updated name of the team
+#
+# @see Model#update_team_name
 post('/teams/:id') do
-  id = params[:id]
-  team_name = params[:team_name]
-
-  db = SQLite3::Database.new("Data/Pokemon.db")
-  
-  db.execute("UPDATE Teams SET team_name = ? WHERE id = ?", [team_name, id])
-
-  redirect('/todos')
+  update_team_name(params[:id], params[:team_name])
 end

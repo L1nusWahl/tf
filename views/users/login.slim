@@ -3,7 +3,7 @@ section.login
   div.container
     div.form-box
       h1 Logga in
-      form action="/login" method="post"
+      form action="/users/login" method="post"
         div.form-group
           label Användarnamn
           input.form-control(type="text" placeholder="Användarnamn" name="username")
@@ -11,5 +11,5 @@ section.login
           label Lösenord
           input.form-control(type="password" placeholder="Lösenord" name="password")
         button.loggin(type="submit") Logga in
-      a(href='/register') Registrera dig
+      a(href='/users/register') Registrera dig
 

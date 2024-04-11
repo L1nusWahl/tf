@@ -1,15 +1,11 @@
 h1 Redigera lag
-
 h2 Lagets namn: #{@team['team_name']}
-
 a.tillbaka_lank href="/todos" Tillbaka 
-
 h3 Pokémon i laget:
 - @pokemon_in_team.each do |pokemon|
   section.pokemon-container
     section.pokemon-info
-      img(src="/pokemon_images/#{pokemon['image_filename']}" alt=pokemon["name"])
-      p = pokemon["name"]
+      h2 = "#{pokemon['id']}"
       h4 Moves:
       ul.moves-list
     section.moves
