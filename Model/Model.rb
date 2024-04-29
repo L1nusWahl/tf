@@ -14,22 +14,32 @@ module Model
     db.results_as_hash = true 
     result = db.execute('SELECT * FROM users WHERE username = ?', username).first
 
-    if result.nil?
-      redirect('/fel')
+    log = db.execute("SELECT * FROM Userlog WHERE Userip = ? AND Time > ?",request.ip, (Time.now.to_i - 300))   
+    if log.count >= 5     
+      flash[:notice] = "Too many login attempts"     
+      redirect('/users/login')   
+    else     
+      db.execute("INSERT INTO Userlog (Userip,Time) VALUES (?,?)",request.ip, Time.now.to_i)
+
+      if result.nil?
+        redirect('/fel')
+      end 
+
+      id = result["id"]
+      password_digest = result["password_digest"]
+      role = result["role"]
+      
+
+      if BCrypt::Password.new(password_digest) == password
+        session[:id] = id
+        session[:role] = role 
+        redirect('/home')
+      else
+        redirect('/fel')
+      end
     end 
-
-    id = result["id"]
-    password_digest = result["password_digest"]
-    role = result["role"]
-
-    if BCrypt::Password.new(password_digest) == password
-      session[:id] = id
-      session[:role] = role 
-      redirect('/home')
-    else
-      redirect('/fel')
-    end
   end
+  
 
   # Registers a new user
   #

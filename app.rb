@@ -4,10 +4,20 @@ require 'slim'
 require 'sinatra/reloader'
 require 'sqlite3'
 require 'bcrypt'
+require 'sinatra/flash'
 
 enable :sessions
 include Model
 
+
+before do
+  p "Before KÖRS, session_user_id är #{session[:id]}."
+  if (session[:id] ==  nil) && (request.path_info != '/users/login')
+    flash[:notice] = "You need to log in to see this"
+    redirect('/users/login')
+  end
+end
+ 
 helpers do
   def current_user_admin?
     session[:id] && session[:role] == 1
@@ -25,6 +35,7 @@ end
 get('/users/login') do
   slim(:"users/login")
 end
+
 
 # Logs out the current user by clearing the session
 #
